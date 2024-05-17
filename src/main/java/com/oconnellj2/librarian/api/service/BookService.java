@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.oconnellj2.librarian.api.entity.Book;
+import com.oconnellj2.librarian.api.exception.BookNotFoundException;
 import com.oconnellj2.librarian.api.repository.BookRepository;
 
 import lombok.AllArgsConstructor;
@@ -19,7 +20,8 @@ public class BookService {
 	}
 
 	public Book getBook(Long id) {
-		return repo.findById(id).orElseThrow(IllegalArgumentException::new);
+		return repo.findById(id)
+				.orElseThrow(() -> new BookNotFoundException("Book not found with ID: " + id));
 	}
 
 	public String addBook(Book book) {

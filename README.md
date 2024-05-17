@@ -1,6 +1,5 @@
-
-
 # Librarian API
+[OpenAPI Documentation](http://localhost:8080/swagger-ui/index.html) - When API is running.
 
 ## Dependencies
 - openjdk:20
@@ -34,7 +33,7 @@
 docker-compose up
 ```
 
-## Push to Docker Hub (to deploy with k8s)
+## Deploy with k8s
 
 **Login:**
 ```bash
@@ -46,14 +45,12 @@ docker login
 docker build -t jdoconnell/librarian-api:1.0.0 .
 ```
 
-**Push:**
+**Push to Docker Hub:**
 ```bash
 docker push jdoconnell/librarian-api:1.0.0
 ```
 
-## Install helm charts to deploy k8s
-
-**Install:**
+**Install helm charts:**
 ```bash
 helm install librarianapi-release ./helm
 ```
