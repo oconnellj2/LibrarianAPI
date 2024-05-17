@@ -15,9 +15,9 @@ public class Database {
 	@Bean
 	CommandLineRunner initDataBase(BookRepository repo) {
 		return args -> {
-			log.info("Preloading " + repo.save(new Book("The Hobbit", "J.R.R Tolkin")));
+			log.info("Preloading " + repo.save(new Book("The Hobbit", "J.R.R. Tolkien")));
 			log.info("Preloading " + repo.save(new Book("Dune", "Frank Herbert")));
-			log.info("Preloading " + repo.save(new Book("Harry Potter", "J. K. Rowling")));
+			log.info("Preloading " + repo.save(new Book("Harry Potter", "J.K. Rowling")));
 		};
 	}
 }
