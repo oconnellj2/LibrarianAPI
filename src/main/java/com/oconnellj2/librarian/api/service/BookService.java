@@ -1,14 +1,14 @@
 package com.oconnellj2.librarian.api.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.oconnellj2.librarian.api.entity.Book;
 import com.oconnellj2.librarian.api.exception.BookNotFoundException;
 import com.oconnellj2.librarian.api.repository.BookRepository;
 
 import lombok.AllArgsConstructor;
+
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
