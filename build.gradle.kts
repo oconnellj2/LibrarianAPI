@@ -1,8 +1,9 @@
 plugins {
-	java
-	jacoco
+	id("java")
+	id("jacoco")
 	id("org.springframework.boot") version "3.2.5"
 	id("io.spring.dependency-management") version "1.1.4"
+	id("info.solidsoft.pitest") version "1.15.0"
 }
 
 group = "com.oconnellj2"
@@ -25,31 +26,36 @@ dependencies {
 	implementation("com.h2database:h2")
 	// OpenAPI Swagger documentation.
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
-	// Annotations and Configuration Processor.
+	// Annotations/Configuration Processor.
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor("org.projectlombok:lombok")
-	// Docker.
-	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
-	// Unit tests.
+	// JUnit PIT Mutation testing.
 	testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.junit.jupiter:junit-jupiter")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	pitest("org.pitest:pitest-junit5-plugin:1.2.1")
 	// Monitoring.
 	runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+	// Docker.
+	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 }
 
 jacoco.toolVersion = "0.8.12"
 tasks.jacocoTestReport {
-	reports.html.required.set(true)
 	classDirectories.setFrom(files(classDirectories.files.map {
 		fileTree(it) {
 			setExcludes(listOf(
-				"**/config/**"
+				"**/config/**",
+				"**/Application.class"
 			))
 		}
 	}))
+}
+pitest {
+	pitestVersion.set("1.16.1")
+	excludedClasses.set(listOf("**.config.**"))
 }
 tasks.withType<Test> {
 	useJUnitPlatform()

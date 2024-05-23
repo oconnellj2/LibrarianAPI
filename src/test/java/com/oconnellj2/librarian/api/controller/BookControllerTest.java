@@ -23,10 +23,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oconnellj2.librarian.api.entity.Book;
@@ -41,6 +44,8 @@ public class BookControllerTest {
 	private ObjectMapper objectMapper;
 	@MockBean
 	private BookService bookService;
+	@MockBean
+	private Book bookMock;
 
 	private Book book1;
 	private Book book2;
@@ -100,9 +105,9 @@ public class BookControllerTest {
 
 	@Test
 	public void testGetBook() throws Exception {
-		// Given/When.
+		// Given.
 		when(bookService.getBook(ID)).thenReturn(book1);
-		// Then.
+		// When/Then.
 		mockMvc.perform(get("/books/1")
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
@@ -119,14 +124,15 @@ public class BookControllerTest {
 		when(bookService.getBook(invalidId)).thenReturn(null);
 		// Then.
 		mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", invalidId))
-				.andExpect(MockMvcResultMatchers.status().isNotFound());
+				.andExpect(MockMvcResultMatchers.status().isNotFound())
+				.andExpect(content().string("Book not found with ID: " + invalidId));
 	}
 
 	@Test
 	public void testGetBookByInvalidId() throws Exception {
-		// Given
+		// Given.
 		String invalidId = "abc";
-		// When/Then
+		// When/Then.
 		mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", invalidId))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest())
 				.andExpect(MockMvcResultMatchers.content().string("Invalid ID supplied"));
@@ -134,9 +140,9 @@ public class BookControllerTest {
 
 	@Test
 	public void testAddBook() throws Exception {
-		// Given/When.
+		// Given.
 		when(bookService.addBook(any(Book.class))).thenReturn(ID.toString());
-		// Then
+		// When/Then.
 		mockMvc.perform(MockMvcRequestBuilders.post("/books")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(book1)))
@@ -147,74 +153,89 @@ public class BookControllerTest {
 
 	@Test
 	public void testUpdateBook() throws Exception {
-		// When.
-		doReturn(book1).when(bookService).getBook(ID);
-		doNothing().when(bookService).updateBook(book1);
-		// Then.
-		mockMvc.perform(MockMvcRequestBuilders.put("/books/{id}", ID)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(book2)))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string("book updated successfully"));
-	}
-
-	@Test
-	public void testUpdateBookWithNoAuthor() throws Exception {
 		// Given.
-		book2.setAuthor(null);
+		doReturn(bookMock).when(bookService).getBook(ID);
+		doNothing().when(bookMock).setTitle(TITLE);
+		doNothing().when(bookMock).setAuthor(AUTHOR);
+		doNothing().when(bookService).updateBook(bookMock);
 		// When.
-		doReturn(book1).when(bookService).getBook(ID);
-		doNothing().when(bookService).updateBook(book1);
-		// Then.
 		mockMvc.perform(MockMvcRequestBuilders.put("/books/{id}", ID)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(book2)))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string("book updated successfully"));
+				.content(objectMapper.writeValueAsString(book1)))
+				.andExpect(status().isOk())
+				.andExpect(content().string("book updated successfully"));
+		// Then.
+		verify(bookMock, times(1)).setTitle(TITLE);
+		verify(bookMock, times(1)).setAuthor(AUTHOR);
+		verify(bookService, times(1)).updateBook(bookMock);
 	}
 
 	@Test
-	public void testUpdateBookWithNoTitle() throws Exception {
+	public void testUpdateBookWithNullTitle() throws Exception {
 		// Given.
 		book2.setTitle(null);
+		doReturn(bookMock).when(bookService).getBook(ID);
+		doNothing().when(bookMock).setAuthor(anyString());
+		doNothing().when(bookService).updateBook(bookMock);
 		// When.
-		doReturn(book1).when(bookService).getBook(ID);
-		doNothing().when(bookService).updateBook(book1);
-		// Then.
 		mockMvc.perform(MockMvcRequestBuilders.put("/books/{id}", ID)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(book2)))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string("book updated successfully"));
+				.andExpect(status().isOk())
+				.andExpect(content().string("book updated successfully"));
+		// Then.
+		verify(bookMock, never()).setTitle(any());
+	}
+
+	@Test
+	public void testUpdateBookWithNullAuthor() throws Exception {
+		// Given.
+		book2.setAuthor(null);
+		doReturn(bookMock).when(bookService).getBook(ID);
+		doNothing().when(bookMock).setTitle(TITLE);
+		doNothing().when(bookService).updateBook(bookMock);
+		// When.
+		mockMvc.perform(MockMvcRequestBuilders.put("/books/{id}", ID)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(book2)))
+				.andExpect(status().isOk())
+				.andExpect(content().string("book updated successfully"));
+		// Then.
+		verify(bookMock, never()).setAuthor(null);
 	}
 
 	@Test
 	public void testUpdateBookNotFound() throws Exception {
-		// Given/When.
+		// Given.
 		doReturn(null).when(bookService).getBook(ID);
-		// Then.
+		// When.
 		mockMvc.perform(MockMvcRequestBuilders.put("/books/{id}", ID)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(book2)))
-				.andExpect(MockMvcResultMatchers.status().isNotFound());
+				.andExpect(status().isNotFound());
+		// Then.
+		verify(bookService, never()).updateBook(book1);
 	}
 
 	@Test
 	public void testDeleteExistingBook() throws Exception {
-		// Given/When.
+		// Given.
 		when(bookService.getBook(ID)).thenReturn(book1);
 		doNothing().when(bookService).deleteBook(ID);
-		// THen.
+		// When.
 		mockMvc.perform(MockMvcRequestBuilders.delete("/books/{id}", ID)
 				.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk());
+				.andExpect(status().isOk())
+				.andExpect(content().string("Book deleted successfully"));
+		// Then.
+		verify(bookService, times(1)).deleteBook(ID);
 	}
 
 	@Test
 	public void testDeleteNonExistingBook() throws Exception {
-		// Given/When.
+		// Given.
 		when(bookService.getBook(ID)).thenReturn(null);
-		// Then.
+		// When/Then.
 		mockMvc.perform(MockMvcRequestBuilders.delete("/books/{id}", ID)
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound());
