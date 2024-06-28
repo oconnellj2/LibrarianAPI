@@ -1,5 +1,5 @@
-FROM openjdk:20
-LABEL com.oconnellj2.image.authors="jdoconnell@pm.me"
+FROM openjdk:21
+LABEL com.oconnellj2.image.authors="jdo.info@pm.me"
 LABEL version="1.0.0"
 LABEL description="Spring Boot API providing RESTful services for a librarian"
 

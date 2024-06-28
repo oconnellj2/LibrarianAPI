@@ -1,6 +1,6 @@
 services:
   backend:
-    image: openjdk:20
+    image: openjdk:21
     volumes:
       - ./build/libs/LibrarianAPI-1.0.0.jar:/app/librarian-api-1.0.0.jar
     command: java -jar /app/librarian-api-1.0.0.jar

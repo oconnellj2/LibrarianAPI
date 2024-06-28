@@ -22,12 +22,12 @@ public class Book {
 
 	@NotBlank(message = "Title is required")
 	@Size(max = 255)
-	@Schema(description = "Title of the book.", example = "The Great Gatsby", required = true)
+	@Schema(description = "Title of the book.", example = "The Great Gatsby")
 	private String title;
 
 	@NotBlank(message = "Author is required")
 	@Size(max = 255)
-	@Schema(description = "Author of the book.", example = "F. Scott Fitzgerald", required = true)
+	@Schema(description = "Author of the book.", example = "F. Scott Fitzgerald")
 	private String author;
 
 	public Book(String title, String author) {
